@@ -11,3 +11,8 @@ __pycache__/
 venv/
 dist/
 *.egg-info/
+
+# Frontend
+node_modules/
+.next/
+next-env.d.ts

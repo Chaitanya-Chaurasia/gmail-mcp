@@ -1,12 +1,18 @@
 # gmail-mcp
 
-A personal Gmail MCP server for inbox cleanup, built with the official Python
-MCP SDK (FastMCP). Exposes search/read/trash/spam/unsubscribe tools to Claude
-Code so you can clean your inbox conversationally.
+A personal Gmail inbox-cleanup toolkit with three faces sharing one tool core:
+
+1. **MCP server** (`src/gmail_mcp/`) - plug the tools into Claude Code
+2. **Chat backend** (`backend/`) - FastAPI + Anthropic agentic loop over the
+   same tools, streamed as SSE
+3. **Chat frontend** (`frontend/`) - Next.js, chat-only, black & white,
+   iMessage-style bubbles with timestamps, live thinking + tool-call display
 
 ## Layout
 
 ```
+backend/main.py     FastAPI /api/chat - Anthropic tool loop, SSE streaming
+frontend/           Next.js chat UI (shadcn-style components, Tailwind v4)
 src/gmail_mcp/
   app.py            shared FastMCP instance
   config.py         pydantic-settings (.env, GMAIL_MCP_* vars)
@@ -65,6 +71,22 @@ scope and is irreversible - trash is the safe ceiling for an AI agent).
    claude mcp add gmail -- uv run --directory /Users/chait/Desktop/gmail-mcp gmail-mcp
    ```
    Restart the Claude Code session; tools appear as `mcp__gmail__*`.
+
+## Chat UI (frontend + backend)
+
+1. Put your Anthropic key in `.env` (repo root): `ANTHROPIC_API_KEY=sk-ant-...`
+2. Backend (terminal 1):
+   ```sh
+   uv sync --extra web
+   uv run uvicorn backend.main:app --port 8000
+   ```
+3. Frontend (terminal 2):
+   ```sh
+   cd frontend && npm install && npm run dev
+   ```
+4. Open http://localhost:3000 and chat: the UI streams the model's summarized
+   thinking, every tool call (tap to expand input/output), and the reply as
+   iMessage-style bubbles. `/api/*` is proxied to the backend by Next.
 
 ## Development
 
