@@ -226,11 +226,6 @@ export function Chat() {
 
   return (
     <main className="mx-auto flex h-dvh max-w-2xl flex-col">
-      <header className="border-b border-neutral-200 px-6 py-3 text-center">
-        <h1 className="text-sm font-semibold tracking-tight">gmail-mcp</h1>
-        <p className="text-[11px] text-neutral-400">inbox cleanup, chat only</p>
-      </header>
-
       <div className="flex-1 space-y-3 overflow-y-auto px-4 py-6">
         {messages.length === 0 && (
           <p className="pt-24 text-center text-[13px] text-neutral-400">

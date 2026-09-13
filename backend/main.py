@@ -21,7 +21,7 @@ from typing import Any
 
 from anthropic import AsyncAnthropic
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -148,3 +148,18 @@ async def chat(req: ChatRequest) -> StreamingResponse:
 @app.get("/api/health")
 async def health() -> dict[str, Any]:
     return {"ok": True, "tools": [t.name for t in await mcp.list_tools()]}
+
+
+@app.get("/api/tools")
+async def list_tools() -> list[dict[str, Any]]:
+    """Tool palette for UI mode - names, descriptions, and JSON schemas."""
+    return await anthropic_tools()
+
+
+@app.post("/api/tools/{name}")
+async def exec_tool(name: str, args: dict[str, Any]) -> dict[str, str]:
+    """Direct tool execution for UI mode - no LLM involved."""
+    known = {t.name for t in await mcp.list_tools()}
+    if name not in known:
+        raise HTTPException(status_code=404, detail=f"unknown tool: {name}")
+    return {"output": await run_tool(name, args)}
