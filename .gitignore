@@ -2,9 +2,12 @@
 credentials.json
 *.token.json
 token.json
+.env
 
-# Python
+# Python / uv
 __pycache__/
 *.pyc
 .venv/
 venv/
+dist/
+*.egg-info/

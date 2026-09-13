@@ -4,6 +4,25 @@ A personal Gmail MCP server for inbox cleanup, built with the official Python
 MCP SDK (FastMCP). Exposes search/read/trash/spam/unsubscribe tools to Claude
 Code so you can clean your inbox conversationally.
 
+## Layout
+
+```
+src/gmail_mcp/
+  app.py            shared FastMCP instance
+  config.py         pydantic-settings (.env, GMAIL_MCP_* vars)
+  auth.py           OAuth flow + cached Gmail service
+  gmail.py          Gmail API wrapper -> pydantic models
+  models.py         EmailSummary / EmailDetail / UnsubscribeInfo / ...
+  server.py         entry point (gmail-mcp / gmail-mcp --login)
+  tools/
+    read.py         search_emails, read_email, get_thread, list_labels
+    cleanup.py      trash_email, trash_many, report_spam
+    unsubscribe.py  get_unsubscribe_info, send_unsubscribe, block_sender
+```
+
+Tools stay one-call thin; Gmail REST plumbing lives in `gmail.py`; models own
+their compact text rendering (everything a tool returns is LLM context).
+
 ## Tools
 
 | Tool | Scope | What it does |
@@ -27,30 +46,32 @@ scope and is irreversible - trash is the safe ceiling for an AI agent).
 1. **Google Cloud** ([console.cloud.google.com](https://console.cloud.google.com)):
    create a project, enable the **Gmail API**, create an **OAuth client ID**
    of type **Desktop app**, download it as `credentials.json` into this
-   directory. Add yourself as a test user on the OAuth consent screen.
+   directory (or point `GMAIL_MCP_CREDENTIALS_PATH` at it - see
+   `.env.example`). Add yourself as a test user on the consent screen.
 
-2. **Install deps:**
+2. **Install** (uv manages the venv):
    ```sh
-   python -m venv .venv && source .venv/bin/activate
-   pip install -r requirements.txt
+   uv sync
    ```
 
-3. **One-time OAuth login** (opens a browser; token is cached at
+3. **One-time OAuth login** (opens a browser; token cached at
    `~/.gmail-mcp-token.json`):
    ```sh
-   python gmail_mcp.py --login
+   uv run gmail-mcp --login
    ```
 
 4. **Register with Claude Code:**
    ```sh
-   claude mcp add gmail -- /Users/chait/Desktop/gmail-mcp/.venv/bin/python /Users/chait/Desktop/gmail-mcp/gmail_mcp.py
+   claude mcp add gmail -- uv run --directory /Users/chait/Desktop/gmail-mcp gmail-mcp
    ```
    Restart the Claude Code session; tools appear as `mcp__gmail__*`.
 
-## Debugging
+## Development
 
 ```sh
-mcp dev gmail_mcp.py   # MCP Inspector - call tools by hand in a browser UI
+uv run ruff check .        # lint
+uv run ruff format .       # format
+uv run mcp dev src/gmail_mcp/server.py   # MCP Inspector - call tools by hand
 ```
 
 Log to stderr only - stdout carries the MCP protocol.
