@@ -15,6 +15,14 @@ dependencies = [
 [project.scripts]
 gmail-mcp = "gmail_mcp.server:main"
 
+[project.optional-dependencies]
+web = [
+    "anthropic>=0.40",
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+    "python-dotenv>=1.0",
+]
+
 [dependency-groups]
 dev = ["ruff>=0.6"]
 
